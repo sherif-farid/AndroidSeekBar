@@ -14,6 +14,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:step="5"
+        app:min="15"
+        app:max="100"
+        app:log_enabled="true"
+        app:round_to_min="false"
+        app:main_track_shape="@drawable/track_shape"
+        app:selected_track_shape="@drawable/selected_shape"
+        app:text_shape="@drawable/text_shape"
+        app:thumb_shape="@drawable/thumb_shape"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
