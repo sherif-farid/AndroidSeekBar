@@ -4,6 +4,7 @@
         <attr name="min" format="integer" />
         <attr name="max" format="integer" />
         <attr name="step" format="integer" />
+        <attr name="default_value" format="integer" />
         <attr name="log_enabled" format="boolean" />
         <attr name="round_to_min" format="boolean" />
         <attr name="main_track_shape" format="reference" />
@@ -11,5 +12,6 @@
         <attr name="thumb_shape" format="reference" />
         <attr name="text_shape" format="reference" />
         <attr name="track_height" format="dimension" />
+        <attr name="thumb_size" format="dimension" />
     </declare-styleable>
 </resources>

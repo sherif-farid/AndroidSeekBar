@@ -2,6 +2,9 @@ package com.example.rangebar
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.Editable
+import android.text.InputFilter
+import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +13,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.addTextChangedListener
 import com.example.rangebar.databinding.RangeBarBinding
 
 
@@ -29,22 +33,32 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private var mWidth = 0
     private var thumbWidth = 0
     private var maxVisualRange = 100
-    private var minVisualRange = 15
+    private var minVisualRange = 0
     private var availableVisualRange = maxVisualRange - minVisualRange
     private var availableTrack = 0
-    private var step = 5
-    private var isLogEnabled = true
+    private var step = 1
+    private var isLogEnabled = false
     private var isRoundToMin = false
-    private val percentFlag = " %"
+    private var defaultValue = maxVisualRange
+    private var textLayoutWidth = 0
 
     fun interface OnRangeChanged {
-        fun onChange(rangeValue: Int)
+        fun onChange(rangeValue: Int , isMoving:Boolean)
     }
 
     var onRangeChanged: OnRangeChanged? = null
     private fun logs(log: String) {
         if (!isLogEnabled) return
         Log.v(tag, log)
+    }
+    fun setDefaultValue(value:Int){
+        this.defaultValue = value
+        logs("setDefaultValue $defaultValue")
+        setText("$defaultValue")
+        inputsFromEditText()
+    }
+    private fun setText(txt:String){
+        binding.et.setText(txt)
     }
 
     private fun roundToStep(value: Int): Int {
@@ -62,19 +76,38 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RangeBar)
             minVisualRange = typedArray.getInt(R.styleable.RangeBar_min, minVisualRange)
             maxVisualRange = typedArray.getInt(R.styleable.RangeBar_max, maxVisualRange)
+            defaultValue  = typedArray.getInt(R.styleable.RangeBar_default_value, maxVisualRange)
             step = typedArray.getInt(R.styleable.RangeBar_step, step)
             isLogEnabled = typedArray.getBoolean(R.styleable.RangeBar_log_enabled, isLogEnabled)
             isRoundToMin = typedArray.getBoolean(R.styleable.RangeBar_round_to_min, isRoundToMin)
             val trackShape = typedArray.getDrawable(R.styleable.RangeBar_main_track_shape)
-            val selectedTrackShape =
-                typedArray.getDrawable(R.styleable.RangeBar_selected_track_shape)
+            val selectedTrackShape = typedArray.getDrawable(R.styleable.RangeBar_selected_track_shape)
             val thumbShape = typedArray.getDrawable(R.styleable.RangeBar_thumb_shape)
             val textShape = typedArray.getDrawable(R.styleable.RangeBar_text_shape)
+            val trackHeight = typedArray.getDimensionPixelSize(R.styleable.RangeBar_track_height , 0)
+            val thumbSize = typedArray.getDimensionPixelSize(R.styleable.RangeBar_thumb_size , 0)
             binding.mainTrack.background = trackShape
             binding.rangeView.background = selectedTrackShape
             binding.thumb.background = thumbShape
-            binding.et.background = textShape
+            binding.textLayout.background = textShape
+            if (trackHeight > 0){
+                binding.mainTrack.updateLayoutParams {
+                    this.height = trackHeight
+                }
+                binding.rangeView.updateLayoutParams {
+                    this.height = trackHeight
+                }
+            }
+            if (thumbSize > 0){
+                binding.thumb.updateLayoutParams {
+                    this.height = thumbSize
+                    this.width = thumbSize
+                }
+            }
             typedArray.recycle()
+            availableVisualRange = maxVisualRange - minVisualRange
+            logs("initValues thumbSize $thumbSize trackHeight $trackHeight minVisualRange $minVisualRange maxVisualRange $maxVisualRange" +
+                    " step $step isRoundToMin $isRoundToMin availableVisualRange $availableVisualRange")
         } catch (e: Exception) {
             e.printStackTrace()
             logs("initValues e $e")
@@ -88,17 +121,19 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             false
         )
         this.addView(binding.root)
+        initValues(attrs)
         binding.root.post {
             mWidth = binding.mainTrack.width
             thumbWidth = binding.thumb.width
             availableTrack = mWidth - thumbWidth
+            textLayoutWidth = binding.textLayout.width
             binding.rangeView.updateLayoutParams {
                 this.width = availableTrack
             }
             logs("mWidth $mWidth thumbWidth $thumbWidth availableTrack $availableTrack")
-
+            setDefaultValue(defaultValue)
         }
-        initValues(attrs)
+        binding.et.filters = arrayOf(InputFilter.LengthFilter("$maxVisualRange".length))
         binding.root.setOnTouchListener(this)
         binding.et.isCursorVisible = false
         binding.et.setOnEditorActionListener { v, actionId, event ->
@@ -110,20 +145,27 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             }
 
         }
+        binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            textLayoutWidth = binding.textLayout.width
+            updateTextPositionToThumb()
+        }
+        binding.et.addTextChangedListener {
+            binding.et.setSelection(it?.length?:0)
+        }
     }
 
     private fun inputsFromEditText(): Boolean {
         return try {
-            var currentTxt = binding.et.text.toString().replace(percentFlag , "").toInt()
+            var currentTxt = binding.et.text.toString().ifEmpty {"0"}.toInt()
             if (currentTxt < minVisualRange) currentTxt = minVisualRange
             if (currentTxt > maxVisualRange) currentTxt = maxVisualRange
             currentTxt = roundToStep(currentTxt)
-            binding.et.setText("$currentTxt$percentFlag")
+            setText("$currentTxt")
             val percent = (currentTxt.toFloat() - minVisualRange) / availableVisualRange.toFloat()
             val x = percent * availableTrack.toFloat()
             logs("setOnEditorActionListener currentTxt $currentTxt x $x percent $percent")
             moveThumb(availableTrack - x, true)
-            triggerCallBack()
+            triggerCallBack(false)
             false
         } catch (e: Exception) {
             e.printStackTrace()
@@ -131,31 +173,48 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             false
         }
     }
+    private fun updateTextPositionToThumb(){
+        val transX = binding.thumb.translationX
+        val centerTextLayoutWidth = textLayoutWidth.toFloat() / 2
+        when {
+            transX > centerTextLayoutWidth  && transX < mWidth - centerTextLayoutWidth -> {
+                binding.textLayout.translationX = transX - centerTextLayoutWidth
+            }
+            transX <= centerTextLayoutWidth -> {
+                binding.textLayout.translationX = 0f
+            }
+            transX >=  mWidth - textLayoutWidth -> {
+                val v = (mWidth - textLayoutWidth).toFloat()
+                binding.textLayout.translationX = v
+            }
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     private fun moveThumb(x: Float, isFromText: Boolean = false) {
+        triggerCallBack(true)
         logs("moveThumb x $x current x ${binding.thumb.translationX}")
-        var offsetX = x
-        if (offsetX < 0) {
-            logs("moveThumb x $x offsetX $offsetX return under minimum")
-            offsetX = 0f
+        var transX = x
+        if (transX < 0) {
+            logs("moveThumb x $x transX $transX return under minimum")
+            transX = 0f
         }
-        if (x > availableTrack) {
-            logs("moveThumb x $x offsetX $offsetX return more than maximum")
-            offsetX = availableTrack.toFloat()
+        if (transX > availableTrack) {
+            logs("moveThumb x $x transX $transX return more than maximum")
+            transX = availableTrack.toFloat()
         }
-        binding.thumb.translationX = offsetX
-        binding.et.translationX = offsetX
+        binding.thumb.translationX = transX
+        updateTextPositionToThumb()
         logs("after moveThumb current x ${binding.thumb.translationX}")
         binding.rangeView.updateLayoutParams {
-            this.width = availableTrack - offsetX.toInt()
+            this.width = availableTrack - transX.toInt() + (thumbWidth.toFloat() / 2).toInt()
         }
         if (!isFromText) {
-            val percent = (availableTrack - offsetX) / availableTrack.toFloat()
+            val percent = (availableTrack - transX) / availableTrack.toFloat()
             val txt = (percent * availableVisualRange) + minVisualRange
             val txtRounded = roundToStep(txt.toInt())
             logs("moveThumb percent $percent txt $txt")
-            binding.et.setText("$txtRounded$percentFlag")
+            setText("$txtRounded")
         }
     }
 
@@ -177,9 +236,9 @@ class RangeBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         }
     }
 
-    private fun triggerCallBack() {
+    private fun triggerCallBack(isMoving: Boolean) {
         try {
-            onRangeChanged?.onChange(binding.et.text.toString().replace(percentFlag , "").toInt())
+            onRangeChanged?.onChange(binding.et.text.toString().toInt() , isMoving)
         } catch (e: Exception) {
             e.printStackTrace()
             logs("triggerCallBack e :$e")
