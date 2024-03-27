@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="track_height">29dp</dimen>
+    <dimen name="step_width">2dp</dimen>
+</resources>

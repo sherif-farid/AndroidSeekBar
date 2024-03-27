@@ -6,8 +6,17 @@
     android:layout_height="match_parent"
     android:background="#fff"
     tools:context=".MainActivity">
-
-    <com.example.rangebar.RangeBar
+    <TextView
+        android:id="@+id/priceTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/bar"
+        android:textSize="22sp"
+        android:textColor="@android:color/black"
+        android:textAlignment="gravity"
+        android:gravity="center"
+        />
+    <com.example.rangebar.RangeBarGradiant
         android:id="@+id/bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,18 +25,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:step="10"
-        app:min="20"
-        app:max="100"
-        app:log_enabled="true"
-        app:round_to_min="false"
-        app:default_value="70"
-        app:main_track_shape="@drawable/track_shape"
-        app:selected_track_shape="@drawable/selected_shape"
-        app:text_shape="@drawable/text_shape"
         app:thumb_shape="@drawable/thumb_shape"
-        app:track_height="4dp"
-        app:thumb_size="20dp"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
