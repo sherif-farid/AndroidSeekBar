@@ -47,6 +47,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private val listOfStepsXAxis = ArrayList<Float>()
 
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
+        updateDimensions()
         logs("setStepsList list ${list.toList()} recommendedStepIndex $recommendedStepIndex")
         if (recommendedStepIndex < 0 ||
             recommendedStepIndex > list.size - 1 ||
@@ -172,23 +173,27 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         )
         this.addView(binding.root)
         initValues(attrs)
-        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                mWidth = binding.cardView.width
-                thumbWidth = binding.thumb.width
-                textLayoutWidth = binding.textLayout.width
-                logs("mWidth $mWidth thumbWidth $thumbWidth ")
-                drawSteps()
-            }
-        })
-        binding.root.post {
 
-        }
+
         binding.cardView.setOnTouchListener(this)
         binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             textLayoutWidth = binding.textLayout.width
         }
+    }
+    private fun updateDimensions(){
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.root.post {
+                    binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    mWidth = binding.cardView.width
+                    thumbWidth = binding.thumb.width
+                    textLayoutWidth = binding.textLayout.width
+                    logs("mWidth $mWidth thumbWidth $thumbWidth ")
+                    drawSteps()
+                }
+
+            }
+        })
     }
 
     private fun updateTextPositionToThumb(x: Float, width: Int) {
