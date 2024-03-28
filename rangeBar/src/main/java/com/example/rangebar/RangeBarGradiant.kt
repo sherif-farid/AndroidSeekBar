@@ -141,7 +141,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun drawSteps() {
-        logs("drawSteps")
+        logs("drawSteps stepsList ${stepsList.toList()}")
         listOfStepsXAxis.clear()
         binding.stepsLayout.removeAllViews()
         binding.stepsLayout.addView(stepStartSpace())
@@ -153,7 +153,10 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             binding.stepsLayout.addView(stepView)
             viewsStepsList.add(stepView)
             stepView.post {
-                listOfStepsXAxis.add(stepView.x)
+                val stepX = stepView.x
+                if (stepX > 0 ) {
+                    listOfStepsXAxis.add(stepX)
+                }
                 logs("listOfStepsXAxis ${listOfStepsXAxis.toList()}")
                 if (i == RECOMMENDED_STEP_INDEX) {
                     updateTextPositionToThumb(stepView.x, stepView.width)
