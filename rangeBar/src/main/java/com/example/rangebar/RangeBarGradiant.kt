@@ -8,14 +8,16 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.NestedScrollView
 import com.example.rangebar.databinding.RangeBarGradiantBinding
 import java.lang.RuntimeException
-import kotlin.math.abs
 
 
 /*
@@ -175,8 +177,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         )
         this.addView(binding.root)
         initValues(attrs)
-
-
         binding.cardView.setOnTouchListener(this)
         binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             textLayoutWidth = binding.textLayout.width
@@ -187,6 +187,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             override fun onGlobalLayout() {
                 binding.root.post {
                     binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    getParentScroll()
                     mWidth = binding.cardView.width
                     thumbWidth = binding.thumb.width
                     textLayoutWidth = binding.textLayout.width
@@ -196,6 +197,16 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
             }
         })
+    }
+    var mParent : ViewParent? = null
+    private fun getParentScroll(){
+        mParent = binding.root.parent
+        while (mParent != null ){
+            if (mParent is ScrollView || mParent is NestedScrollView) {
+                break
+            }
+            mParent = mParent?.parent
+        }
     }
 
     private fun updateTextPositionToThumb(x: Float, width: Int) {
@@ -231,9 +242,14 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         binding.thumb.translationX = transX
         binding.mainTrack.translationX = transX + THUMB_EDGE
     }
+
+
+
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+
         return when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                mParent?.requestDisallowInterceptTouchEvent(true)
                 true
             }
 
@@ -241,8 +257,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 moveThumb(event.x)
                 true
             }
-
+            MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_UP -> {
+                mParent?.requestDisallowInterceptTouchEvent(false)
                 logs("ACTION_UP event.x ${event.x}")
                 val lastMinStepIndex = lastMinStepIndex(event.x)
                 val lastStepX = listOfStepsXAxis.safeIndex(lastMinStepIndex)?:0f

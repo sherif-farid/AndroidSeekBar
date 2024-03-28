@@ -6,27 +6,45 @@
     android:layout_height="match_parent"
     android:background="#fff"
     tools:context=".MainActivity">
-    <TextView
-        android:id="@+id/priceTxt"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/bar"
-        android:textSize="22sp"
-        android:textColor="@android:color/black"
-        android:textAlignment="gravity"
-        android:gravity="center"
-        />
-    <com.example.rangebar.RangeBarGradiant
-        android:id="@+id/bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:thumb_shape="@drawable/thumb_shape"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/priceTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@id/bar"
+                android:textSize="22sp"
+                android:textColor="@android:color/black"
+                android:textAlignment="gravity"
+                android:gravity="center"
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp"/>
+            <com.example.rangebar.RangeBarGradiant
+                android:id="@+id/bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:thumb_shape="@drawable/thumb_shape"
 
-        />
+                />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1000dp"/>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
