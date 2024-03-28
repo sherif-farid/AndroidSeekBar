@@ -150,7 +150,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 binding.stepsLayout.addView(stepSpace())
             }
             val stepView = stepView()
-            stepView.tag = stepsList[i]
             binding.stepsLayout.addView(stepView)
             viewsStepsList.add(stepView)
             stepView.post {
@@ -262,7 +261,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             try {
                 val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
                 moveThumb(stepX - (thumbWidth / 2))
-                triggerCallBack(isMoving = false, index = stepIndex)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -300,12 +298,12 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             stepsList.lastOrNull() ?: 0
         }
 
-        val price = if (isMoving) {
-            currentPrice.toInt()
-        } else {
-            stepsList[index]
-        }
         try {
+            val price = if (isMoving) {
+                currentPrice.toInt()
+            } else {
+                stepsList[index]
+            }
             onRangeChanged?.onChange(price, isMoving)
         } catch (e: Exception) {
             e.printStackTrace()
