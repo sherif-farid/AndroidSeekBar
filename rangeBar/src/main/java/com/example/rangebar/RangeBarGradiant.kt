@@ -268,6 +268,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun lastMinStepIndex(x: Float): Int {
+        logs("lastMinStepIndex listOfStepsXAxis size ${listOfStepsXAxis.size} list ${listOfStepsXAxis.toList()}")
         for (i in listOfStepsXAxis.size - 1 downTo 0) {
             val stepX = listOfStepsXAxis.safeIndex(i)?:0f
             logs("lastMinStepIndex i $i stepX $stepX x $x")
