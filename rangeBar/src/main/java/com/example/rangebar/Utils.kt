@@ -35,3 +35,7 @@ fun getGradientDrawable(startColor:String , endColor: String):GradientDrawable{
 
     return gradientDrawable
 }
+
+fun <T> List<T>.safeIndex(index: Int): T? {
+    return if (this.isNotEmpty() && index >= 0 && this.size > index) this[index] else null
+}

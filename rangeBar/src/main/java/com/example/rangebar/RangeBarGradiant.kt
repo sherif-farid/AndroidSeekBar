@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
@@ -44,7 +45,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private val viewsStepsList = ArrayList<View>()
     private var RECOMMENDED_STEP_INDEX = 0
     private val listOfStepsXAxis = ArrayList<Float>()
+
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
+        logs("setStepsList list ${list.toList()} recommendedStepIndex $recommendedStepIndex")
         if (recommendedStepIndex < 0 ||
             recommendedStepIndex > list.size - 1 ||
             list.isEmpty()
@@ -137,6 +140,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun drawSteps() {
+        logs("drawSteps")
         listOfStepsXAxis.clear()
         binding.stepsLayout.removeAllViews()
         binding.stepsLayout.addView(stepStartSpace())
@@ -168,12 +172,18 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         )
         this.addView(binding.root)
         initValues(attrs)
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                mWidth = binding.cardView.width
+                thumbWidth = binding.thumb.width
+                textLayoutWidth = binding.textLayout.width
+                logs("mWidth $mWidth thumbWidth $thumbWidth ")
+                drawSteps()
+            }
+        })
         binding.root.post {
-            mWidth = binding.cardView.width
-            thumbWidth = binding.thumb.width
-            textLayoutWidth = binding.textLayout.width
-            logs("mWidth $mWidth thumbWidth $thumbWidth mWidth $mWidth")
-            drawSteps()
+
         }
         binding.cardView.setOnTouchListener(this)
         binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
@@ -230,8 +240,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             MotionEvent.ACTION_UP -> {
                 logs("ACTION_UP event.x ${event.x}")
                 val lastMinStepIndex = lastMinStepIndex(event.x)
+                val lastStepX = listOfStepsXAxis.safeIndex(lastMinStepIndex)?:0f
                 if (lastMinStepIndex > -1) {
-                    moveThumb(listOfStepsXAxis[lastMinStepIndex] - (thumbWidth / 2))
+                    moveThumb(lastStepX - (thumbWidth / 2))
                     triggerCallBack(isMoving = false, index = lastMinStepIndex)
                 }
                 false
@@ -244,7 +255,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     fun setCurrentStep(stepIndex: Int , delay:Long = 500) {
         binding.root.postDelayed({
             try {
-                val stepX = listOfStepsXAxis[stepIndex]
+                val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
                 moveThumb(stepX - (thumbWidth / 2))
                 triggerCallBack(isMoving = false, index = stepIndex)
             } catch (e: Exception) {
@@ -255,7 +266,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
     private fun lastMinStepIndex(x: Float): Int {
         for (i in listOfStepsXAxis.size - 1 downTo 0) {
-            val stepX = listOfStepsXAxis[i]
+            val stepX = listOfStepsXAxis.safeIndex(i)?:0f
             logs("lastMinStepIndex i $i stepX $stepX x $x")
             if (x > stepX) {
                 return i
@@ -268,8 +279,8 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         val currentPrice = try {
             val lastMinStepIndex = lastMinStepIndex(x)
             val nextStepIndex = lastMinStepIndex + 1
-            val prevX = listOfStepsXAxis[lastMinStepIndex]
-            val nextX = listOfStepsXAxis[nextStepIndex]
+            val prevX = listOfStepsXAxis.safeIndex(lastMinStepIndex)?:0f
+            val nextX = listOfStepsXAxis.safeIndex(nextStepIndex)?:0f
             val prevPrice = stepsList[lastMinStepIndex]
             val nextPrice = stepsList[nextStepIndex]
             logs("callback x $x prevX $prevX nextX $nextX prevPrice $prevPrice nextPrice $nextPrice")
