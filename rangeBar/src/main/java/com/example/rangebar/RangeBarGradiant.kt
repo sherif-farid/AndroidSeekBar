@@ -231,7 +231,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         binding.thumb.translationX = transX
         binding.mainTrack.translationX = transX + THUMB_EDGE
     }
-
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         return when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -243,7 +242,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 true
             }
 
-            MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_UP -> {
                 logs("ACTION_UP event.x ${event.x}")
                 val lastMinStepIndex = lastMinStepIndex(event.x)
@@ -252,7 +250,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                     moveThumb(lastStepX - (thumbWidth / 2))
                     triggerCallBack(isMoving = false, index = lastMinStepIndex)
                 }
-                false
+                true
             }
 
             else -> false
