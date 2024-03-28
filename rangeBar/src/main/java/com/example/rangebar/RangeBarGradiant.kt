@@ -169,13 +169,13 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         this.addView(binding.root)
         initValues(attrs)
         binding.root.post {
-            mWidth = binding.root.width
+            mWidth = binding.cardView.width
             thumbWidth = binding.thumb.width
             textLayoutWidth = binding.textLayout.width
             logs("mWidth $mWidth thumbWidth $thumbWidth mWidth $mWidth")
             drawSteps()
         }
-        binding.root.setOnTouchListener(this)
+        binding.cardView.setOnTouchListener(this)
         binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             textLayoutWidth = binding.textLayout.width
         }
@@ -183,7 +183,8 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
     private fun updateTextPositionToThumb(x: Float, width: Int) {
         logs("updateTextPositionToThumb x $x ")
-        val xPosition = x + (width / 2) - (binding.textLayout.width / 2)
+
+        val xPosition = x + (width / 2) - (binding.textLayout.width / 2) + binding.cardView.x
         binding.textLayout.translationX = xPosition
         val lp = binding.solidView.layoutParams
         lp.apply {
@@ -255,11 +256,12 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private fun lastMinStepIndex(x: Float): Int {
         for (i in listOfStepsXAxis.size - 1 downTo 0) {
             val stepX = listOfStepsXAxis[i]
+            logs("lastMinStepIndex i $i stepX $stepX x $x")
             if (x > stepX) {
                 return i
             }
         }
-        return -1
+        return 0
     }
 
     private fun triggerCallBack(isMoving: Boolean, index: Int = 0, x: Float = 0f) {
@@ -271,11 +273,14 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             val prevPrice = stepsList[lastMinStepIndex]
             val nextPrice = stepsList[nextStepIndex]
             logs("callback x $x prevX $prevX nextX $nextX prevPrice $prevPrice nextPrice $nextPrice")
-            val price = (((x - prevX) / (nextX - prevX)) * (nextPrice - prevPrice)) + prevPrice
+            var price = (((x - prevX) / (nextX - prevX)) * (nextPrice - prevPrice)) + prevPrice
             logs("callback price $price")
+            if (price < stepsList.first()) price = stepsList.first().toFloat()
+            if (price > stepsList.last())price = stepsList.last().toFloat()
             price
         } catch (e: Exception) {
             e.printStackTrace()
+            logs("callback error $e")
             stepsList.lastOrNull() ?: 0
         }
 
