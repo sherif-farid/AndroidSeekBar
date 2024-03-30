@@ -32,6 +32,7 @@ private const val THUMB_EDGE = 5
 @SuppressLint("ClickableViewAccessibility,SetTextI18n")
 class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs), View.OnTouchListener {
+    private var info: Int = -1
     private var binding: RangeBarGradiantBinding
     private val tag = "RangeBarTag"
     private var mWidth = 0
@@ -46,7 +47,13 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private var stepsList = ArrayList<Int>()
     private val viewsStepsList = ArrayList<View>()
     private var RECOMMENDED_STEP_INDEX = 0
-    private val listOfStepsXAxis = ArrayList<Float>()
+    private var listOfStepsXAxis = ArrayList<Float>()
+    private var isStepsDrawn = false
+    private fun validateStepAxisList(){
+        if (listOfStepsXAxis.size != stepsList.size){
+            listOfStepsXAxis = listOfStepsXAxis.distinct() as ArrayList<Float>
+        }
+    }
 
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
         updateDimensions()
@@ -63,7 +70,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     fun interface OnRangeChanged {
-        fun onChange(price: Int, isMoving: Boolean)
+        fun onChange(price: Int, isMoving: Boolean , info: Int)
     }
 
     var onRangeChanged: OnRangeChanged? = null
@@ -143,6 +150,8 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun drawSteps() {
+        if (isStepsDrawn)return
+        isStepsDrawn = true
         logs("drawSteps stepsList ${stepsList.toList()}")
         listOfStepsXAxis.clear()
         binding.stepsLayout.removeAllViews()
@@ -219,12 +228,12 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             this.width = x.toInt()
         }
         binding.solidView.layoutParams = lp
-        setCurrentStep(RECOMMENDED_STEP_INDEX , delay = 0)
+        setCurrentStep(RECOMMENDED_STEP_INDEX )
     }
 
     @SuppressLint("SetTextI18n")
-    private fun moveThumb(x: Float) {
-        triggerCallBack(true, x = x)
+    private fun moveThumb(x: Float , index: Int = -1) {
+        triggerCallBack(true, x = x , index = index)
         logs(
             "moveThumb x $x current x ${binding.thumb.translationX} " +
                     "availableTrack $mWidth thumbWidth $thumbWidth"
@@ -274,18 +283,20 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         }
     }
 
-    fun setCurrentStep(stepIndex: Int , delay:Long = 500) {
-        binding.root.postDelayed({
+
+    fun setCurrentStep(stepIndex: Int , info:Int = -1) {
+        this.info = info
+        binding.root.post{
             try {
                 val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
-                moveThumb(stepX - (thumbWidth / 2))
+                moveThumb(stepX - (thumbWidth / 2) , index = stepIndex)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        },delay)
+        }
     }
-
     private fun lastMinStepIndex(x: Float): Int {
+        validateStepAxisList()
         logs("lastMinStepIndex listOfStepsXAxis size ${listOfStepsXAxis.size} list ${listOfStepsXAxis.toList()}")
         for (i in listOfStepsXAxis.size - 1 downTo 0) {
             val stepX = listOfStepsXAxis.safeIndex(i)?:0f
@@ -318,15 +329,16 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         }
 
         try {
-            val price = if (isMoving) {
+            val isInProgress = isMoving && index == -1
+            val price = if (isInProgress) {
                 currentPrice.toInt()
             } else {
                 stepsList[index]
             }
-            onRangeChanged?.onChange(price, isMoving)
+            onRangeChanged?.onChange(price, isInProgress , info)
         } catch (e: Exception) {
             e.printStackTrace()
-            logs("triggerCallBack e :$e")
+            logs("callback e :$e")
         }
     }
 }

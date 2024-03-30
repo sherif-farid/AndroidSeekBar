@@ -16,16 +16,28 @@ class MainActivity : AppCompatActivity(), RangeBarGradiant.OnRangeChanged {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val stepsList = arrayListOf<Int>()
-        for (i in 1..5) {
-            stepsList.add(i *100)
+        for (i in 30..79) {
+            stepsList.add(i *10)
         }
-        binding.bar.setStepsList(stepsList , 2)
+        binding.bar.setStepsList(stepsList , 31)
         //uncomment to set a specific step
         //binding.bar.setCurrentStep(3)
         binding.bar.onRangeChanged = this
+        binding.btn1.setOnClickListener {
+            binding.bar.setCurrentStep(31)
+        }
+        binding.btn2.setOnClickListener {
+            binding.bar.setCurrentStep(10)
+        }
+        binding.btn3.setOnClickListener {
+            binding.bar.setCurrentStep(15)
+        }
+        binding.btn4.setOnClickListener {
+            binding.bar.setCurrentStep(20)
+        }
     }
 
-    override fun onChange(price: Int , isMoving:Boolean) {
+    override fun onChange(price: Int, isMoving: Boolean, info: Int) {
         Log.v(tag , "rangeValue $price isMoving $isMoving")
         binding.priceTxt.text = "$price"
     }
