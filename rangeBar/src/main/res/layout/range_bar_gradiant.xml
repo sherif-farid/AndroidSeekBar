@@ -101,6 +101,7 @@
             android:layout_gravity="center"
             />
         <TextView
+            android:id="@+id/recommendedTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/recommended_price"

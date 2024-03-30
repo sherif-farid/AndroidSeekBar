@@ -56,6 +56,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
+        isStepsDrawn = false
         updateDimensions()
         logs("setStepsList list ${list.toList()} recommendedStepIndex $recommendedStepIndex")
         this.RECOMMENDED_STEP_INDEX = recommendedStepIndex
@@ -162,6 +163,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
             textLayoutWidth = binding.textLayout.width
         }
+        binding.recommendedTxt.setOnClickListener {
+            setCurrentStep(RECOMMENDED_STEP_INDEX)
+        }
     }
     private fun updateDimensions(){
         binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
@@ -230,16 +234,19 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
         return when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+//                logs("ACTION_DOWN")
                 mParent?.requestDisallowInterceptTouchEvent(true)
                 true
             }
 
             MotionEvent.ACTION_MOVE -> {
+//                logs("ACTION_MOVE")
                 moveThumb(event.x)
                 true
             }
             MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_UP -> {
+//                logs("ACTION_UP")
                 mParent?.requestDisallowInterceptTouchEvent(false)
 //                logs("ACTION_UP event.x ${event.x}")
                 val lastMinStepIndex = lastMinStepIndex(event.x)
@@ -313,6 +320,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 logs("onRangeChanged price $price index $index thumb position $thumbPos")
             }
             onRangeChanged?.onChange(price, isInProgress , info)
+            info = -1
         } catch (e: Exception) {
             e.printStackTrace()
             logs("callback e :$e")
