@@ -37,14 +37,14 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private val tag = "RangeBarTag"
     private var mWidth = 0
     private var thumbWidth = 0
-    private var maxVisualRange = 100
-    private var minVisualRange = 0
-    private var availableVisualRange = maxVisualRange - minVisualRange
-    private var isLogEnabled = false
-    private var isRoundToMin = false
-    private var defaultValue = maxVisualRange
+//    private var maxVisualRange = 100
+//    private var minVisualRange = 0
+//    private var availableVisualRange = maxVisualRange - minVisualRange
+    private var isLogEnabled = true
+//    private var isRoundToMin = false
+//    private var defaultValue = maxVisualRange
     private var textLayoutWidth = 0
-    private var stepsList = ArrayList<Int>()
+    private var stepsList = arrayListOf(1,100)
     private val viewsStepsList = ArrayList<View>()
     private var RECOMMENDED_STEP_INDEX = 0
     private var listOfStepsXAxis = ArrayList<Float>()
@@ -58,12 +58,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
         updateDimensions()
         logs("setStepsList list ${list.toList()} recommendedStepIndex $recommendedStepIndex")
-        if (recommendedStepIndex < 0 ||
-            recommendedStepIndex > list.size - 1 ||
-            list.isEmpty()
-        ) {
-            throw RuntimeException("invalid list size ${list.size} with recommendedStepIndex $recommendedStepIndex")
-        }
         this.RECOMMENDED_STEP_INDEX = recommendedStepIndex
         this.stepsList = list
         invalidate()
@@ -82,31 +76,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private fun initValues(attrs: AttributeSet?) {
         try {
             val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RangeBar)
-            minVisualRange = typedArray.getInt(R.styleable.RangeBar_min, minVisualRange)
-            maxVisualRange = typedArray.getInt(R.styleable.RangeBar_max, maxVisualRange)
-            defaultValue = typedArray.getInt(R.styleable.RangeBar_default_value, maxVisualRange)
             isLogEnabled = typedArray.getBoolean(R.styleable.RangeBar_log_enabled, isLogEnabled)
-            isRoundToMin = typedArray.getBoolean(R.styleable.RangeBar_round_to_min, isRoundToMin)
-            val thumbShape = typedArray.getDrawable(R.styleable.RangeBar_thumb_shape)
-            val textShape = typedArray.getDrawable(R.styleable.RangeBar_text_shape)
-            val trackHeight = typedArray.getDimensionPixelSize(R.styleable.RangeBar_track_height, 0)
-            val thumbSize = typedArray.getDimensionPixelSize(R.styleable.RangeBar_thumb_size, 0)
             binding.gradientView.background = getGradientDrawable("#FF5A409B", "#FFFC2727")
-            binding.thumb.background = thumbShape
-            binding.textLayout.background = textShape
-            if (thumbSize > 0) {
-                binding.thumb.updateLayoutParams {
-                    this.height = thumbSize
-                    this.width = thumbSize
-                }
-            }
             typedArray.recycle()
-            availableVisualRange = maxVisualRange - minVisualRange
-
-            logs(
-                "initValues thumbSize $thumbSize trackHeight $trackHeight minVisualRange $minVisualRange maxVisualRange $maxVisualRange" +
-                        " isRoundToMin $isRoundToMin availableVisualRange $availableVisualRange"
-            )
         } catch (e: Exception) {
             e.printStackTrace()
             logs("initValues e $e")
@@ -152,7 +124,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private fun drawSteps() {
         if (isStepsDrawn)return
         isStepsDrawn = true
-        logs("drawSteps stepsList ${stepsList.toList()}")
+//        logs("drawSteps stepsList ${stepsList.toList()}")
         listOfStepsXAxis.clear()
         binding.stepsLayout.removeAllViews()
         binding.stepsLayout.addView(stepStartSpace())
@@ -168,7 +140,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 if (stepX > 0 ) {
                     listOfStepsXAxis.add(stepX)
                 }
-                logs("listOfStepsXAxis ${listOfStepsXAxis.toList()}")
+//                logs("listOfStepsXAxis ${listOfStepsXAxis.toList()}")
                 if (i == RECOMMENDED_STEP_INDEX) {
                     updateTextPositionToThumb(stepView.x, stepView.width)
                 }
@@ -200,7 +172,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                     mWidth = binding.cardView.width
                     thumbWidth = binding.thumb.width
                     textLayoutWidth = binding.textLayout.width
-                    logs("mWidth $mWidth thumbWidth $thumbWidth ")
+//                    logs("mWidth $mWidth thumbWidth $thumbWidth ")
                     drawSteps()
                 }
 
@@ -219,7 +191,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun updateTextPositionToThumb(x: Float, width: Int) {
-        logs("updateTextPositionToThumb x $x ")
+//        logs("updateTextPositionToThumb x $x ")
 
         val xPosition = x + (width / 2) - (binding.textLayout.width / 2) + binding.cardView.x
         binding.textLayout.translationX = xPosition
@@ -233,23 +205,23 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
     @SuppressLint("SetTextI18n")
     private fun moveThumb(x: Float , index: Int = -1) {
-        triggerCallBack(true, x = x , index = index)
-        logs(
+       /* logs(
             "moveThumb x $x current x ${binding.thumb.translationX} " +
                     "availableTrack $mWidth thumbWidth $thumbWidth"
-        )
+        )*/
         var transX = x
         val max = mWidth - THUMB_EDGE - thumbWidth
         if (transX < THUMB_EDGE) {
-            logs("moveThumb x $x transX $transX return under minimum")
+//            logs("moveThumb x $x transX $transX return under minimum")
             transX = THUMB_EDGE.toFloat()
         }
         if (transX > max) {
-            logs("moveThumb x $x transX $transX return more than maximum")
+//            logs("moveThumb x $x transX $transX return more than maximum")
             transX = max.toFloat()
         }
         binding.thumb.translationX = transX
         binding.mainTrack.translationX = transX + THUMB_EDGE
+        triggerCallBack(true, x = x , index = index)
     }
 
 
@@ -269,7 +241,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_UP -> {
                 mParent?.requestDisallowInterceptTouchEvent(false)
-                logs("ACTION_UP event.x ${event.x}")
+//                logs("ACTION_UP event.x ${event.x}")
                 val lastMinStepIndex = lastMinStepIndex(event.x)
                 val lastStepX = listOfStepsXAxis.safeIndex(lastMinStepIndex)?:0f
                 if (lastMinStepIndex > -1) {
@@ -285,6 +257,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
 
 
     fun setCurrentStep(stepIndex: Int , info:Int = -1) {
+        logs("setCurrentStep stepIndex $stepIndex stepPrice ${stepsList[stepIndex]} info $info")
         this.info = info
         binding.root.post{
             try {
@@ -297,10 +270,10 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
     private fun lastMinStepIndex(x: Float): Int {
         validateStepAxisList()
-        logs("lastMinStepIndex listOfStepsXAxis size ${listOfStepsXAxis.size} list ${listOfStepsXAxis.toList()}")
+//        logs("lastMinStepIndex listOfStepsXAxis size ${listOfStepsXAxis.size} list ${listOfStepsXAxis.toList()}")
         for (i in listOfStepsXAxis.size - 1 downTo 0) {
             val stepX = listOfStepsXAxis.safeIndex(i)?:0f
-            logs("lastMinStepIndex i $i stepX $stepX x $x")
+//            logs("lastMinStepIndex i $i stepX $stepX x $x")
             if (x > stepX) {
                 return i
             }
@@ -316,9 +289,9 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             val nextX = listOfStepsXAxis.safeIndex(nextStepIndex)?:0f
             val prevPrice = stepsList[lastMinStepIndex]
             val nextPrice = stepsList[nextStepIndex]
-            logs("callback x $x prevX $prevX nextX $nextX prevPrice $prevPrice nextPrice $nextPrice")
+//            logs("callback x $x prevX $prevX nextX $nextX prevPrice $prevPrice nextPrice $nextPrice")
             var price = (((x - prevX) / (nextX - prevX)) * (nextPrice - prevPrice)) + prevPrice
-            logs("callback price $price")
+//            logs("callback price $price")
             if (price < stepsList.first()) price = stepsList.first().toFloat()
             if (price > stepsList.last())price = stepsList.last().toFloat()
             price
@@ -334,6 +307,10 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                 currentPrice.toInt()
             } else {
                 stepsList[index]
+            }
+            if (!isInProgress){
+                val thumbPos = binding.thumb.x
+                logs("onRangeChanged price $price index $index thumb position $thumbPos")
             }
             onRangeChanged?.onChange(price, isInProgress , info)
         } catch (e: Exception) {
