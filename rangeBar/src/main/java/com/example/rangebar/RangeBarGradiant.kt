@@ -204,7 +204,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             this.width = x.toInt()
         }
         binding.solidView.layoutParams = lp
-        setCurrentStep(RECOMMENDED_STEP_INDEX )
     }
 
     @SuppressLint("SetTextI18n")

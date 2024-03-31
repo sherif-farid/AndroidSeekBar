@@ -24,15 +24,19 @@ class MainActivity : AppCompatActivity(), RangeBarGradiant.OnRangeChanged {
         //binding.bar.setCurrentStep(3)
         binding.bar.onRangeChanged = this
         binding.btn1.setOnClickListener {
+            binding.bar.setStepsList(stepsList , 31)
             binding.bar.setCurrentStep(0)
         }
         binding.btn2.setOnClickListener {
+            binding.bar.setStepsList(stepsList , 31)
             binding.bar.setCurrentStep(stepsList.size -1)
         }
         binding.btn3.setOnClickListener {
+            binding.bar.setStepsList(stepsList , 31)
             binding.bar.setCurrentStep(15)
         }
         binding.btn4.setOnClickListener {
+            binding.bar.setStepsList(stepsList , 31)
             binding.bar.setCurrentStep(20)
         }
     }
