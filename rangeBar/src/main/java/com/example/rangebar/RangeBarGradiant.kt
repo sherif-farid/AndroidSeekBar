@@ -41,12 +41,16 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private var RECOMMENDED_STEP_INDEX = 0
     private var listOfStepsXAxis = ArrayList<Float>()
     private var isStepsDrawn = false
-    private fun validateStepAxisList(){
-        if (listOfStepsXAxis.size != stepsList.size){
+    private fun validateStepAxisList():Boolean{
+        if (listOfStepsXAxis.size != stepsList.size && listOfStepsXAxis.isNotEmpty()){
             listOfStepsXAxis = listOfStepsXAxis.distinct() as ArrayList<Float>
             listOfStepsXAxis.sort()
             logs("validateStepAxisList ${listOfStepsXAxis.toList()}")
         }
+//        if (listOfStepsXAxis.isEmpty()){
+//            logs("listOfStepsXAxis is empty !!")
+//        }
+        return listOfStepsXAxis.size == stepsList.size && listOfStepsXAxis.isNotEmpty()
     }
 
     fun setStepsList(list: ArrayList<Int>, recommendedStepIndex: Int) {
@@ -57,18 +61,59 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         this.stepsList = list
         drawSteps()
     }
+    private var cachedStepIndex = -1
     fun setCurrentStep(stepIndex: Int , info:Int = -1) {
         logs("setCurrentStep stepIndex $stepIndex stepPrice ${stepsList[stepIndex]} info $info")
         this.info = info
+        cachedStepIndex = stepIndex
+        val isValid =  validateStepAxisList()
+        if (!isValid)return
+        gotoStep(stepIndex)
+    }
+    private fun gotoStep(stepIndex: Int){
         binding.root.post{
             try {
                 val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
                 moveThumb(stepX - (thumbWidth / 2) , index = stepIndex)
+                cachedStepIndex = -1
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
+    private fun drawSteps() {
+        if (isStepsDrawn)return
+        listOfStepsXAxis.clear()
+        binding.stepsLayout.removeAllViews()
+        binding.stepsLayout.addView(stepStartSpace())
+        for (i in stepsList.indices) {
+            if (i != 0) {
+                binding.stepsLayout.addView(stepSpace())
+            }
+            val stepView = stepView()
+            binding.stepsLayout.addView(stepView)
+            stepView.post {
+                val stepX = stepView.x
+//                logs("stepX $stepX")
+                if (stepX > 0 ) {
+                    listOfStepsXAxis.add(stepX)
+                }
+//                logs("listOfStepsXAxis ${listOfStepsXAxis.toList()}")
+                if (i == RECOMMENDED_STEP_INDEX) {
+                    updateTextPositionToThumb(stepView.x, stepView.width)
+                }
+                if (i == stepsList.size -1){
+                    isStepsDrawn = true
+                    if (cachedStepIndex >=0){
+                        gotoStep(cachedStepIndex)
+                    }
+                }
+            }
+
+        }
+        binding.stepsLayout.addView(stepStartSpace())
+    }
+
 
     fun interface OnRangeChanged {
         fun onChange(price: Int, isMoving: Boolean , info: Int)
@@ -127,32 +172,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         return v
     }
 
-    private fun drawSteps() {
-        if (isStepsDrawn)return
-        isStepsDrawn = true
-        listOfStepsXAxis.clear()
-        binding.stepsLayout.removeAllViews()
-        binding.stepsLayout.addView(stepStartSpace())
-        for (i in stepsList.indices) {
-            if (i != 0) {
-                binding.stepsLayout.addView(stepSpace())
-            }
-            val stepView = stepView()
-            binding.stepsLayout.addView(stepView)
-            stepView.post {
-                val stepX = stepView.x
-                if (stepX > 0 ) {
-                    listOfStepsXAxis.add(stepX)
-                }
-//                logs("listOfStepsXAxis ${listOfStepsXAxis.toList()}")
-                if (i == RECOMMENDED_STEP_INDEX) {
-                    updateTextPositionToThumb(stepView.x, stepView.width)
-                }
-            }
-
-        }
-        binding.stepsLayout.addView(stepStartSpace())
-    }
 
     init {
         binding = RangeBarGradiantBinding.inflate(

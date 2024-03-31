@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity(), RangeBarGradiant.OnRangeChanged {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val stepsList1 = arrayListOf<Int>()
-        for (i in 1..50) {
+        for (i in 1..500) {
             stepsList1.add(i *10)
         }
         val stepsList2 = arrayListOf<Int>()
