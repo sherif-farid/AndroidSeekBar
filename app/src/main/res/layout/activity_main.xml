@@ -36,7 +36,7 @@
                     android:id="@+id/btn1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1"
+                    android:text="10"
                     />
                 <View
                     android:layout_width="0dp"
@@ -47,7 +47,7 @@
                     android:id="@+id/btn2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2"
+                    android:text="500"
                     />
                 <View
                     android:layout_width="0dp"
@@ -58,7 +58,7 @@
                     android:id="@+id/btn3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3"
+                    android:text="30"
                     />
                 <View
                     android:layout_width="0dp"
@@ -69,7 +69,7 @@
                     android:id="@+id/btn4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4"
+                    android:text="50"
                     />
             </LinearLayout>
             <com.example.rangebar.RangeBarGradiant
@@ -84,6 +84,36 @@
                 app:thumb_shape="@drawable/thumb_shape"
                 app:log_enabled="true"
                 />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+                <TextView
+                    android:id="@+id/min"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart"
+                    android:text="min"
+                    />
+                <TextView
+                    android:id="@+id/recommendedTxt"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:text="recommended"
+                    />
+                <TextView
+                    android:id="@+id/max"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAlignment="viewEnd"
+                    android:text="max"
+                    />
+            </LinearLayout>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1000dp"/>

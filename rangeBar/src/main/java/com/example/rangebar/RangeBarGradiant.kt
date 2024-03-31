@@ -14,10 +14,8 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.core.content.ContextCompat
-import androidx.core.view.updateLayoutParams
 import androidx.core.widget.NestedScrollView
 import com.example.rangebar.databinding.RangeBarGradiantBinding
-import java.lang.RuntimeException
 
 
 /*
@@ -37,21 +35,17 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private val tag = "RangeBarTag"
     private var mWidth = 0
     private var thumbWidth = 0
-//    private var maxVisualRange = 100
-//    private var minVisualRange = 0
-//    private var availableVisualRange = maxVisualRange - minVisualRange
     private var isLogEnabled = true
-//    private var isRoundToMin = false
-//    private var defaultValue = maxVisualRange
     private var textLayoutWidth = 0
     private var stepsList = arrayListOf(1,100)
-    private val viewsStepsList = ArrayList<View>()
     private var RECOMMENDED_STEP_INDEX = 0
     private var listOfStepsXAxis = ArrayList<Float>()
     private var isStepsDrawn = false
     private fun validateStepAxisList(){
         if (listOfStepsXAxis.size != stepsList.size){
             listOfStepsXAxis = listOfStepsXAxis.distinct() as ArrayList<Float>
+            listOfStepsXAxis.sort()
+            logs("validateStepAxisList ${listOfStepsXAxis.toList()}")
         }
     }
 
@@ -61,7 +55,19 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         logs("setStepsList list ${list.toList()} recommendedStepIndex $recommendedStepIndex")
         this.RECOMMENDED_STEP_INDEX = recommendedStepIndex
         this.stepsList = list
-        invalidate()
+        drawSteps()
+    }
+    fun setCurrentStep(stepIndex: Int , info:Int = -1) {
+        logs("setCurrentStep stepIndex $stepIndex stepPrice ${stepsList[stepIndex]} info $info")
+        this.info = info
+        binding.root.post{
+            try {
+                val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
+                moveThumb(stepX - (thumbWidth / 2) , index = stepIndex)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun interface OnRangeChanged {
@@ -82,7 +88,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             typedArray.recycle()
         } catch (e: Exception) {
             e.printStackTrace()
-            logs("initValues e $e")
         }
     }
 
@@ -125,7 +130,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private fun drawSteps() {
         if (isStepsDrawn)return
         isStepsDrawn = true
-//        logs("drawSteps stepsList ${stepsList.toList()}")
         listOfStepsXAxis.clear()
         binding.stepsLayout.removeAllViews()
         binding.stepsLayout.addView(stepStartSpace())
@@ -135,7 +139,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             }
             val stepView = stepView()
             binding.stepsLayout.addView(stepView)
-            viewsStepsList.add(stepView)
             stepView.post {
                 val stepX = stepView.x
                 if (stepX > 0 ) {
@@ -160,9 +163,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         this.addView(binding.root)
         initValues(attrs)
         binding.cardView.setOnTouchListener(this)
-        binding.textLayout.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-            textLayoutWidth = binding.textLayout.width
-        }
         binding.recommendedTxt.setOnClickListener {
             setCurrentStep(RECOMMENDED_STEP_INDEX)
         }
@@ -176,8 +176,6 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                     mWidth = binding.cardView.width
                     thumbWidth = binding.thumb.width
                     textLayoutWidth = binding.textLayout.width
-//                    logs("mWidth $mWidth thumbWidth $thumbWidth ")
-                    drawSteps()
                 }
 
             }
@@ -262,18 +260,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
 
-    fun setCurrentStep(stepIndex: Int , info:Int = -1) {
-        logs("setCurrentStep stepIndex $stepIndex stepPrice ${stepsList[stepIndex]} info $info")
-        this.info = info
-        binding.root.post{
-            try {
-                val stepX = listOfStepsXAxis.safeIndex(stepIndex)?:0f
-                moveThumb(stepX - (thumbWidth / 2) , index = stepIndex)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+
     private fun lastMinStepIndex(x: Float): Int {
         validateStepAxisList()
 //        logs("lastMinStepIndex listOfStepsXAxis size ${listOfStepsXAxis.size} list ${listOfStepsXAxis.toList()}")
@@ -303,7 +290,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             price
         } catch (e: Exception) {
             e.printStackTrace()
-            logs("callback error $e")
+//            logs("callback error $e")
             stepsList.lastOrNull() ?: 0
         }
 
