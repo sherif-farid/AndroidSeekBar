@@ -96,14 +96,16 @@
                     android:layout_weight="1"
                     android:textAlignment="viewStart"
                     android:text="min"
+                    android:textColor="@android:color/black"
                     />
                 <TextView
-                    android:id="@+id/recommendedTxt"
+                    android:id="@+id/recTxt"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textAlignment="center"
                     android:text="recommended"
+                    android:textColor="@android:color/black"
                     />
                 <TextView
                     android:id="@+id/max"
@@ -112,6 +114,7 @@
                     android:layout_weight="1"
                     android:textAlignment="viewEnd"
                     android:text="max"
+                    android:textColor="@android:color/black"
                     />
             </LinearLayout>
             <View
