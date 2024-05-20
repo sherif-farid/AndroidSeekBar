@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import androidx.core.content.ContextCompat
 
 @SuppressLint("MissingPermission")
 fun vibrate(duration: Long, context:Context) {
@@ -21,12 +22,15 @@ fun vibrate(duration: Long, context:Context) {
     }
 }
 
-fun getGradientDrawable(startColor:String , endColor: String):GradientDrawable{
+fun getGradientDrawable(endColor: String, isApplyGradient: Boolean , ctx:Context):GradientDrawable{
     val gradientDrawable = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
+        val mainColor = ContextCompat.getColor(ctx, R.color.main_color)
+        val parsedEndColor =  Color.parseColor(endColor)
+        val end = if (isApplyGradient) parsedEndColor else mainColor
         val colors = intArrayOf(
-            Color.parseColor(startColor),
-            Color.parseColor(endColor)
+            mainColor,
+            end
         )
         this.colors = colors
         gradientType = GradientDrawable.LINEAR_GRADIENT

@@ -36,7 +36,8 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
     private var mWidth = 0
     private var thumbWidth = 0
     private var isLogEnabled = true
-    private var textLayoutWidth = 0
+    private var isApplyGradient = true
+    private var isRecommendedHint = true
     private var stepsList = arrayListOf(1,100)
     private var RECOMMENDED_STEP_INDEX = 0
     private var listOfStepsXAxis = ArrayList<Float>()
@@ -129,8 +130,14 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
         try {
             val typedArray = context.obtainStyledAttributes(attrs, R.styleable.RangeBar)
             isLogEnabled = typedArray.getBoolean(R.styleable.RangeBar_log_enabled, isLogEnabled)
-            binding.gradientView.background = getGradientDrawable("#FF5A409B", "#FFFC2727")
+            isApplyGradient = typedArray.getBoolean(R.styleable.RangeBar_apply_gradiant, isApplyGradient)
+            isRecommendedHint = typedArray.getBoolean(R.styleable.RangeBar_apply_recommended_hint, isRecommendedHint)
+            binding.gradientView.background = getGradientDrawable(
+                endColor ="#FFFC2727" ,
+                isApplyGradient = isApplyGradient ,
+                ctx = context)
             typedArray.recycle()
+            showHideRecommendedHint()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -186,6 +193,10 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
             setCurrentStep(RECOMMENDED_STEP_INDEX)
         }
     }
+    private fun showHideRecommendedHint(){
+        val recommendedVisibility = if (isRecommendedHint) View.VISIBLE else View.GONE
+        binding.textLayout.visibility = recommendedVisibility
+    }
     private fun updateDimensions(){
         binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
             override fun onGlobalLayout() {
@@ -194,7 +205,7 @@ class RangeBarGradiant @JvmOverloads constructor(context: Context, attrs: Attrib
                     getParentScroll()
                     mWidth = binding.cardView.width
                     thumbWidth = binding.thumb.width
-                    textLayoutWidth = binding.textLayout.width
+                    showHideRecommendedHint()
                 }
 
             }

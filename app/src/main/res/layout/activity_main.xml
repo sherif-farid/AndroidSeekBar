@@ -83,6 +83,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:thumb_shape="@drawable/thumb_shape"
                 app:log_enabled="true"
+                app:apply_gradiant="false"
+                app:apply_recommended_hint="false"
                 />
             <LinearLayout
                 android:layout_width="match_parent"
